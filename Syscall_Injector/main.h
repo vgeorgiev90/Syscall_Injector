@@ -15,8 +15,8 @@
 //#define SECURE 443
 
 #define HOST L"127.0.0.1"
-#define FILE L"calc-enc.bin"
-#define LOCAL_FILE "C:\\Users\\nullb1t3\\Desktop\\calc.bin"
+#define REMOTE_FILE L"http-enc.bin"
+#define LOCAL_FILE "C:\\Users\\nullb1t3\\Desktop\\http.bin"
 
 
 

