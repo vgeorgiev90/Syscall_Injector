@@ -270,7 +270,7 @@ BOOL IsDebugged() {
 #ifdef WAIT
 BOOL Delay(FLOAT minutes) {
 
-    DEBUG_PRINT("[*] Delaying execution for: %d minutes.\n", minutes);
+    DEBUG_PRINT("[*] Delaying execution for: %f minutes.\n", minutes);
 
     DWORD ms = minutes * 60000;
     HANDLE hEvent = CreateEvent(NULL, NULL, NULL, NULL);

